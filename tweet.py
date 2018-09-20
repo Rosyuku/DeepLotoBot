@@ -9,6 +9,8 @@ import twitter
 import config
 import scrapeLoto6
 
+import matplotlib as mpl
+mpl.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 #import matplotlib.font_manager
