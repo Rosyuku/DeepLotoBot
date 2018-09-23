@@ -108,6 +108,5 @@ def getLogdata(getall=True, modify=True, last=-1):
 
 if __name__ == "__main__":
     
-    logdata = getLogdata(False, False)
-
-    #logdata.to_csv('logdata.csv')
+    logdata = getLogdata(True, True)
+    logdata.to_csv('data/record.csv')

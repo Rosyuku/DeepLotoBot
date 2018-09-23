@@ -6,6 +6,7 @@ Created on Thu Sep 20 18:05:49 2018
 """
 
 import twitter
+# pip install python-twitter
 import config
 import scrapeLoto6
 
@@ -17,6 +18,9 @@ import matplotlib.cm as cm
 import numpy as np
 import cv2
 import os
+
+if not os.path.exists("media/"):
+    os.mkdir("media/")
 
 if __name__ == "__main__":
 
