@@ -14,6 +14,7 @@ import predict
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 import matplotlib.cm as cm
 #import matplotlib.font_manager
 import pandas as pd
@@ -26,10 +27,7 @@ if not os.path.exists("media/"):
     
 def tweetResultSummary(api):
     
-    def createPiechart(data, label, title, figpath):
-
-        import matplotlib as mpl
-        mpl.use('Agg')        
+    def createPiechart(data, label, title, figpath):   
         
         ###綺麗に書くためのおまじない###
         plt.style.use('ggplot')
@@ -100,9 +98,6 @@ def tweetResultSummary(api):
 def tweetPredictSummary(api):
 
     def createBarchart(data, label, title, figpath):
-        
-        import matplotlib as mpl
-        mpl.use('Agg')
             
         plt.style.use('ggplot')
         plt.rcParams.update({'font.size':10})
