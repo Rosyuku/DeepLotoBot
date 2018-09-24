@@ -27,6 +27,10 @@ if not os.path.exists("media/"):
 def tweetResultSummary(api):
     
     def createPiechart(data, label, title, figpath):
+
+        import matplotlib as mpl
+        mpl.use('Agg')        
+        
         ###綺麗に書くためのおまじない###
         plt.style.use('ggplot')
         plt.rcParams.update({'font.size':15})
@@ -96,6 +100,9 @@ def tweetResultSummary(api):
 def tweetPredictSummary(api):
 
     def createBarchart(data, label, title, figpath):
+        
+        import matplotlib as mpl
+        mpl.use('Agg')
             
         plt.style.use('ggplot')
         plt.rcParams.update({'font.size':10})
