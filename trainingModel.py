@@ -28,6 +28,9 @@ from keras.layers.recurrent import LSTM
     
 if not os.path.exists("model/"):
     os.mkdir("model/")
+
+if not os.path.exists("media/"):
+    os.mkdir("media/")
     
 timesteps = 20
 hidden = 300
