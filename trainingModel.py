@@ -21,10 +21,7 @@ from keras.optimizers import Adam
 
 import tensorflow as tf
 device_name = tf.test.gpu_device_name()
-if device_name == '':
-    from keras.layers.recurrent import LSTM
-else:
-    from keras.layers import CuDNNLSTM as LSTM
+from keras.layers.recurrent import LSTM
     
 if not os.path.exists("model/"):
     os.mkdir("model/")
@@ -89,7 +86,7 @@ if __name__ == "__main__":
     
     #1行ごとに実施
     for i in df.index:
-        print(i)
+        #print(i)
         tdf = df.loc[i, :]
         onehotdf1.loc[i, tdf.iloc[:6].values] = 1
         onehotdf2.loc[i, tdf.iloc[6]] = 1
@@ -103,7 +100,7 @@ if __name__ == "__main__":
     #学習
     history = model.fit([nm_x, bo_x], [nm_y, bo_y],
               batch_size=32,
-              epochs=20,
+              epochs=50,
               validation_split=0.1,
               )
     
