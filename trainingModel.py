@@ -138,7 +138,7 @@ if __name__ == "__main__":
               )
 
     #保存
-    model.save("model/trainer_" + str(df.index.max()).zfill(5) + ".h5")
+    model.save("model/trainer" + ".h5")
     
     if Tweet == True:
         
