@@ -126,18 +126,18 @@ def tweetPredictSummary(api):
         normalNo = predict_normal.loc[targetNo].sort_values(ascending=False).index[:6].str.zfill(2).sort_values().tolist()
         bonusNo = predict_bonus.loc[targetNo].sort_values(ascending=False).index[0]
         
-        msg = "ディープラーニング（LSTM）を用いた予測によると、第%s回のロト6で選ばれる数字は、本数字が%s・%s・%s・%s・%s・%s、ボーナス数字が%sになる見込みです。ご参考まで。#AI #人工知能 #ディープラーニング #loto6 #ロト6" % tuple([targetNo] + normalNo + [bonusNo])
+        msg = "ディープラーニング（LSTM）を用いた予測によると、第%s回のロト6で選ばれる数字は、本数字が%s・%s・%s・%s・%s・%s、ボーナス数字が%sになる見込みです。ご参考まで。#AI #人工知能 #Deepleaning #ディープラーニング #loto6 #ロト6" % tuple([targetNo] + normalNo + [bonusNo])
         
         data = predict_normal.loc[targetNo].values
         label = predict_normal.columns.tolist()
-        title = "Production Number Accuracy"
+        title = "Winning number accuracy"
         fig1path = 'media/predict_production'+ str(targetNo).zfill(5) +'.png'
         
         createBarchart(data, label, title, fig1path)
         
         data = predict_bonus.loc[targetNo].values
         label = predict_bonus.columns.tolist()
-        title = "Bonus Number Accuracy"
+        title = "Bonus number accuracy"
         fig2path = 'media/predict_bonus'+ str(targetNo).zfill(5) +'.png'
         
         createBarchart(data, label, title, fig2path)
