@@ -66,7 +66,7 @@ def tweetResultSummary(api):
         logdata['賞金総額'] = (logdata2['1等賞金総額'] + logdata2['2等賞金総額'] + logdata2['3等賞金総額'] + logdata2['4等賞金総額'] + logdata2['5等賞金総額']).astype(str) + '円'
         logdata['期待値'] = ((logdata2['1等賞金総額'] + logdata2['2等賞金総額'] + logdata2['3等賞金総額'] + logdata2['4等賞金総額'] + logdata2['5等賞金総額']) / (logdata2.iloc[:, 3] / 200)).round().astype(str) + '円'
     
-        msg = "%sに実施された%sの結果は、本数字が%s・%s・%s・%s・%s・%s、ボーナス数字が%sでした。また、販売口数は%sで、賞金総額は%sですので、1口あたりの期待値は%sということになります。なお、次回キャリーオーバー額は%sとのことです。 #loto6 #ロト6" % tuple(logdata.iloc[0, [1, 0, 5, 6, 7, 8, 9, 10, 11,  -3, -2, -1, -4]])
+        msg = "%sに実施された%sの結果は、本数字が%s・%s・%s・%s・%s・%s、ボーナス数字が%sでした。また、販売口数は%sで、賞金総額は%sですので、1口あたりの期待値は%sです。なお、次回キャリーオーバー額は%sです。 #loto6 #ロト6" % tuple(logdata.iloc[0, [1, 0, 5, 6, 7, 8, 9, 10, 11,  -3, -2, -1, -4]])
         #msg = "%sに実施された%sの結果は、本数字が%s,%s,%s,%s,%s,%s、ボーナス数字が%sとなったようです。なお、販売額としては%sで、次回キャリーオーバー額は%sとのことです。 #loto6 #ロト6" % tuple(logdata.iloc[0, [1, 0, 5, 6, 7, 8, 9, 10, 11, 3, -1]])
 
         ###データ###
@@ -90,7 +90,7 @@ def tweetResultSummary(api):
         im_v = cv2.vconcat([im1, im2])
         cv2.imwrite(figpath, im_v)
         
-        api.PostUpdate(msg, media=figpath)
+        api.PostUpdate(msg.replace(",", ""), media=figpath)
         
     else:
         print("tweetResultSummary already exists")    
