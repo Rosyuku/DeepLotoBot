@@ -10,6 +10,7 @@ import twitter
 import config
 import scrapeLoto6
 import predict
+from scipy.special import comb
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -126,18 +127,18 @@ def tweetPredictSummary(api):
         normalNo = predict_normal.loc[targetNo].sort_values(ascending=False).index[:6].str.zfill(2).sort_values().tolist()
         bonusNo = predict_bonus.loc[targetNo].sort_values(ascending=False).index[0]
         
-        msg = "ディープラーニング（LSTM）を用いた予測によると、第%s回のロト6で選ばれる数字は、本数字が%s・%s・%s・%s・%s・%s、ボーナス数字が%sになる見込みです。ご参考まで。#AI #人工知能 #Deepleaning #ディープラーニング #loto6 #ロト6" % tuple([targetNo] + normalNo + [bonusNo])
+        msg = "ディープラーニング（LSTM）を用いた予測によると、第%s回のロト6で選ばれる数字は、本数字が%s・%s・%s・%s・%s・%s、ボーナス数字が%sになる見込みです。ご参考まで。#AI #人工知能 #Deeplearning #ディープラーニング #loto6 #ロト6" % tuple([targetNo] + normalNo + [bonusNo])
         
         data = predict_normal.loc[targetNo].values
         label = predict_normal.columns.tolist()
-        title = "Winning number accuracy"
+        title = "Winning number softmax score"
         fig1path = 'media/predict_production'+ str(targetNo).zfill(5) +'.png'
         
         createBarchart(data, label, title, fig1path)
         
         data = predict_bonus.loc[targetNo].values
         label = predict_bonus.columns.tolist()
-        title = "Bonus number accuracy"
+        title = "Bonus number softmax score"
         fig2path = 'media/predict_bonus'+ str(targetNo).zfill(5) +'.png'
         
         createBarchart(data, label, title, fig2path)
@@ -150,8 +151,94 @@ def tweetPredictSummary(api):
         api.PostUpdate(msg, media=figpath)    
 
     else:
-        print("tweetPredictSummary already exists")    
+        print("tweetPredictSummary already exists")
+        
+def tweetValidationSummary(api):
 
+    def plotbar(size, title, df_data, figpath):
+        plt.style.use('ggplot')
+        plt.rcParams.update({'font.size':10})    
+        
+        plt.figure(figsize=size, dpi=100)
+        df_data.plot.bar(title=title, figsize=size)
+        plt.xlabel("Number o hits")
+        plt.ylabel("Frequency")
+        plt.savefig(figpath, bbox_inches='tight', pad_inches=0.05)      
+    
+    #正解データを読み出し
+    df = pd.read_csv('data/record.csv', index_col=0).iloc[:, 5:12]
+    onehotdf1 = pd.DataFrame(index=df.index, columns=range(1, 44), data=0)
+    onehotdf2 = pd.DataFrame(index=df.index, columns=range(1, 44), data=0)
+    ids1 = pd.melt(df.iloc[:, :6].reset_index(), id_vars='index')
+    ids2 = pd.melt(df.iloc[:, [6]].reset_index(), id_vars='index')
+    for i in range(1, 44):
+        onehotdf1.loc[ids1.loc[ids1['value']==i, 'index'].values, i] = 1
+        onehotdf2.loc[ids2.loc[ids2['value']==i, 'index'].values, i] = 1
+    
+    #予測結果を読み出し
+    predict_normal = pd.read_csv("data/predict_normal.csv", index_col=0)
+    predict_bonus = pd.read_csv("data/predict_bonus.csv", index_col=0)
+    predict_normal = predict_normal[predict_normal.sum(axis=1) != 0]
+    predict_bonus = predict_bonus.loc[predict_normal.index]
+    
+    #答え合わせデータを作成
+    df_result = pd.DataFrame(index=predict_normal.index, columns=['correctnNum', 'correctbNum'], data=np.NaN)
+    for targetNo in predict_normal.index:
+        try:
+            normalNo = predict_normal.loc[targetNo].sort_values(ascending=False).index[:6]
+            bonusNo = predict_bonus.loc[targetNo].sort_values(ascending=False).index[0]
+            correctnNum = onehotdf1.loc[targetNo, normalNo.astype(int)].sum()
+            correctbNum = onehotdf2.loc[targetNo, int(bonusNo)].sum()
+            df_result.loc[targetNo] = correctnNum, correctbNum
+        except:
+            pass
+    df_result = df_result.loc[df_result.count(axis=1) == 2]
+    
+    #理論値との比較結果を作成
+    df_tmp1 = df_result['correctnNum'].value_counts()
+    df_tmp2 = df_result['correctbNum'].value_counts()
+    df_compare1 = pd.DataFrame(index=range(0, 7), columns=['result(LSTM)', 'theory(random)'], data=0)
+    df_compare1.loc[df_tmp1.index, 'result(LSTM)'] = df_tmp1
+    df_compare2 = pd.DataFrame(index=range(0, 2), columns=['result(LSTM)', 'theory(random)'], data=0)
+    df_compare2.loc[df_tmp2.index, 'result(LSTM)'] = df_tmp2
+    
+    for i in df_compare1.index:
+        df_compare1.loc[i, 'theory(random)'] = comb(37, (6-i)) * comb(6, i) / comb(43, 6) * df_result.shape[0]
+    for i in df_compare2.index:
+        df_compare2.loc[i, 'theory(random)'] = comb(43, (1-i)) * comb(1, i) / comb(43, 1) * df_result.shape[0]
+    
+    #既にツイート済みかのチェック
+    targetNo = df_result.index[-1]
+    figpath = 'media/validate'+ str(targetNo).zfill(5) +'.png'
+    
+    if os.path.exists(figpath) == False:
+        #グラフ作成
+        fig1path = 'media/validate_winning'+ str(targetNo).zfill(5) +'.png'
+        fig2path = 'media/validate_bonus'+ str(targetNo).zfill(5) +'.png'    
+        plotbar((7,3.5), "Hit times of Winning number", df_compare1.iloc[:], fig1path)
+        plotbar((4,3.5), "Hit times of Bonus number", df_compare2.iloc[:], fig2path)    
+            
+        #ツイート文章作成
+        normalNo = predict_normal.loc[targetNo].sort_values(ascending=False).index[:6]
+        bonusNo = predict_bonus.loc[targetNo].sort_values(ascending=False).index[0]
+        correctnNum = onehotdf1.loc[targetNo, normalNo.astype(int)].sum()
+        correctbNum = onehotdf2.loc[targetNo, int(bonusNo)].sum()
+        correctnNumber = onehotdf1.loc[targetNo, normalNo.astype(int)].loc[onehotdf1.loc[targetNo, normalNo.astype(int)] > 0].index.tolist()
+        correctbNumber = onehotdf1.loc[targetNo, [int(bonusNo)]].loc[onehotdf2.loc[targetNo, [int(bonusNo)]] > 0].index.tolist()
+        predNum = df_result.shape[0]
+        averageacc = np.round((df_compare1.multiply(df_compare1.index, axis=0).sum() / predNum).loc['result(LSTM)'], 2)
+        averageaccdiff = np.round(averageacc - (df_compare1.multiply(df_compare1.index, axis=0).sum() / predNum).loc['theory(random)'], 2)
+        msg = "第%s回ロト6の予測結果は、本数字が%s個（%s）ボーナス数字が%s個（%s）の的中でした。過去%s回の予測では本数字を平均%s個的中させ、ランダム予測の期待値（0.84個）と比べて%s個の差が出ています（内訳はグラフ参照）。#AI #人工知能 #Deeplearning #ディープラーニング #loto6 #ロト6" % tuple([targetNo] + [correctnNum] + [correctnNumber]  + [correctbNum] + [correctbNumber] + [predNum] + [averageacc] + [averageaccdiff])
+        
+        #ツイート画像作成
+        im1 = cv2.imread(fig1path)
+        im2 = cv2.imread(fig2path)
+        im_v = cv2.hconcat([im1, im2])
+        cv2.imwrite(figpath, im_v)
+        
+        #ツイート実行
+        api.PostUpdate(msg, media=figpath)    
+    
 if __name__ == "__main__":
 
     api = twitter.Api(consumer_key=config.consumer_key,
@@ -162,4 +249,5 @@ if __name__ == "__main__":
     
     tweetResultSummary(api)
     tweetPredictSummary(api)
+    tweetValidationSummary(api)
     
