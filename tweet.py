@@ -12,12 +12,8 @@ import scrapeLoto6
 import predict
 from scipy.special import comb
 
-import matplotlib as mpl
-mpl.use('Agg')
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
 import matplotlib.cm as cm
-#import matplotlib.font_manager
 import pandas as pd
 import numpy as np
 import cv2
@@ -238,6 +234,9 @@ def tweetValidationSummary(api):
         
         #ツイート実行
         api.PostUpdate(msg, media=figpath)    
+
+    else:
+        print("tweetValidateSummary already exists")
     
 if __name__ == "__main__":
 
