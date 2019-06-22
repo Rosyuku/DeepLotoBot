@@ -13,7 +13,9 @@ import predict
 from scipy.special import comb
 
 import matplotlib.pyplot as plt
+plt.switch_backend('agg')
 import matplotlib.cm as cm
+#import matplotlib.font_manager
 import pandas as pd
 import numpy as np
 import cv2
